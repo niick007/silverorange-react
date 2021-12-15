@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Repos } from './Repos';
+import { Repo } from './Repo';
 
 export function App() {
   const [message, setMessage] = useState('');
   const [languages, setLanguages] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
-  const [filteredData, setFilteredData] = useState<any[]>([]);
   const fetchRepositories = async () => {
     axios
       .get('http://localhost:4000/repos')
@@ -28,76 +30,29 @@ export function App() {
             dateB.created_at - dateA.created_at
         );
         setData(sortedList);
-        setFilteredData(sortedList);
       })
       .catch(function (error) {
         setMessage('Unexpected error, please try refreshing the page.');
       });
   };
-  const repoFilter = (e: any) => {
-    const language = e.target.id === '' ? null : e.target.id;
-    const filteredList = data.filter((el) => el.language === language);
-    setFilteredData(filteredList);
-  };
   useEffect(() => {
     fetchRepositories();
   }, []);
   return (
-    <div className="jumbotron">
-      <div className="container">
-        <header className="text-center">
-          <h1>Repositories</h1>
-          <div>{message}</div>
-        </header>
-        <div>
-          <button className="btn btn-success" onClick={fetchRepositories}>
-            Refresh
-          </button>
-          {languages.map((el) => (
-            <button
-              id={el}
-              className="btn btn-primary"
-              key={el}
-              onClick={repoFilter}
-            >
-              {el === null ? 'No Language' : el}
-            </button>
-          ))}
-        </div>
-        <div className="card">
-          <div className="card-body">
-            {filteredData.map((el) => (
-              <div className="mb-3 border-bottom" key={el}>
-                <h1>{el.name}</h1>
-                <div className="row">
-                  <div className="col-md-6">
-                    <p>
-                      <span className="text-muted">Language: </span>
-                      {el.language}
-                    </p>
-                    <p>
-                      <span className="text-muted">Created at: </span>
-                      {el.created_at.toString()}
-                    </p>
-                  </div>
-                  <div className="col-md-6">
-                    <p>
-                      <span className="text-muted">Fork: </span>
-                      {el.forks_count}
-                    </p>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-12">
-                    <label className="text-muted">Description</label>
-                    <p>{el.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <BrowserRouter>
+      <Switch>
+        <Route exact={true} path="/">
+          <Repos
+            data={data}
+            languages={languages}
+            message={message}
+            fetch={fetchRepositories}
+          />
+        </Route>
+        <Route path="/repo/:name">
+          <Repo />
+        </Route>
+      </Switch>
+    </BrowserRouter>
   );
 }
