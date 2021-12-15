@@ -4,7 +4,9 @@ import './App.css';
 
 export function App() {
   const [message, setMessage] = useState('');
+  const [languages, setLanguages] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
   const fetchRepositories = async () => {
     axios
       .get('http://localhost:4000/repos')
@@ -17,15 +19,25 @@ export function App() {
             return el;
           }
         );
+        const languageList = processedList.map(
+          (el: { [x: string]: any }) => el.language
+        );
+        setLanguages(Array.from(new Set(languageList)));
         const sortedList = processedList.sort(
           (dateA: { [x: string]: number }, dateB: { [x: string]: number }) =>
             dateB.created_at - dateA.created_at
         );
         setData(sortedList);
+        setFilteredData(sortedList);
       })
       .catch(function (error) {
         setMessage('Unexpected error, please try refreshing the page.');
       });
+  };
+  const repoFilter = (e: any) => {
+    const language = e.target.id === '' ? null : e.target.id;
+    const filteredList = data.filter((el) => el.language === language);
+    setFilteredData(filteredList);
   };
   useEffect(() => {
     fetchRepositories();
@@ -37,9 +49,24 @@ export function App() {
           <h1>Repositories</h1>
           <div>{message}</div>
         </header>
+        <div>
+          <button className="btn btn-success" onClick={fetchRepositories}>
+            Refresh
+          </button>
+          {languages.map((el) => (
+            <button
+              id={el}
+              className="btn btn-primary"
+              key={el}
+              onClick={repoFilter}
+            >
+              {el === null ? 'No Language' : el}
+            </button>
+          ))}
+        </div>
         <div className="card">
           <div className="card-body">
-            {data.map((el) => (
+            {filteredData.map((el) => (
               <div className="mb-3 border-bottom" key={el}>
                 <h1>{el.name}</h1>
                 <div className="row">
