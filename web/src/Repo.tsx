@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import Markdown from 'markdown-to-jsx';
 
 export function Repo(props: any) {
   const { name } = useParams<any>();
@@ -8,21 +9,39 @@ export function Repo(props: any) {
   const data: any[] = props.data;
   const [repoData, setRepoData] = useState<any[]>([]);
   const [commits, setCommits] = useState<any[]>([]);
+  const [readme, setReadme] = useState('');
+
   useEffect(() => {
     setRepoData(data.filter((el: { name: string }) => el.name === name));
   }, [data, name]);
   useEffect(() => {
-    if (repoData.length > 0 && repoData[0].hasOwnProperty('commits_url')) {
+    if (repoData.length > 0) {
+      if (repoData[0].hasOwnProperty('commits_url')) {
+        axios
+          .get(
+            'http://api.github.com/repos/' + repoData[0].full_name + '/commits'
+          )
+          .then(function (response) {
+            setCommits(response.data);
+            setMessages('Data fetched successfully');
+          })
+          .catch(function (error) {
+            setMessages('Unexpected error, please try refreshing the page.');
+          });
+      }
       axios
         .get(
-          'http://api.github.com/repos/' + repoData[0].full_name + '/commits'
+          'https://raw.githubusercontent.com/' +
+            repoData[0].full_name +
+            '/master/README.md'
         )
         .then(function (response) {
-          setCommits(response.data);
-          setMessages('Data fetched successfully');
+          setReadme(response.data);
         })
         .catch(function (error) {
-          setMessages('Unexpected error, please try refreshing the page.');
+          error.response.status === 404
+            ? setReadme('ReadMe not Found')
+            : setReadme('Unable to load readme');
         });
     }
   }, [repoData]);
@@ -47,6 +66,14 @@ export function Repo(props: any) {
                 </>
               ) : (
                 <p>Commit object not found</p>
+              )}
+              {readme !== '' ? (
+                <div>
+                  <p>Readme:</p>
+                  <Markdown>{readme}</Markdown>
+                </div>
+              ) : (
+                <p>No Readme</p>
               )}
             </div>
           </div>
