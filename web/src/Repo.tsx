@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Markdown from 'markdown-to-jsx';
 
 export function Repo(props: any) {
@@ -50,6 +50,11 @@ export function Repo(props: any) {
       <div className="container">
         <div>
           <p>{messages}</p>
+        </div>
+        <div>
+          <Link to={'/'}>
+            <button className="btn btn-primary">Home</button>
+          </Link>
         </div>
         {repoData.map((el) => (
           <div className="card" key={el}>
