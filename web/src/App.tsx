@@ -39,20 +39,26 @@ export function App() {
     fetchRepositories();
   }, []);
   return (
-    <BrowserRouter>
-      <Switch>
-        <Route exact={true} path="/">
-          <Repos
-            data={data}
-            languages={languages}
-            message={message}
-            fetch={fetchRepositories}
-          />
-        </Route>
-        <Route path="/repo/:name">
-          <Repo />
-        </Route>
-      </Switch>
-    </BrowserRouter>
+    <>
+      {data.length > 0 ? (
+        <BrowserRouter>
+          <Switch>
+            <Route exact={true} path="/">
+              <Repos
+                data={data}
+                languages={languages}
+                message={message}
+                fetch={fetchRepositories}
+              />
+            </Route>
+            <Route path="/repo/:name">
+              <Repo data={data} />
+            </Route>
+          </Switch>
+        </BrowserRouter>
+      ) : (
+        <p>{message}</p>
+      )}
+    </>
   );
 }
